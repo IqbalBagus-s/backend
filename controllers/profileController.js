@@ -29,12 +29,12 @@ async function updateProfile(req, res) {
 
   // Validasi input: name atau password harus diisi
   if (!name && !password) {
-    return res.status(400).json({ error: true, message: 'Name or password must be provided for update' });
+    return res.status(400).json({ error: true, message: 'Username or password must be provided for update' });
   }
 
   // Validasi panjang name (jika diubah)
   if (name && name.length < 12) {
-    return res.status(400).json({ error: true, message: 'Name must be at least 12 characters long' });
+    return res.status(400).json({ error: true, message: 'Username must be at least 12 characters long' });
   }
 
   // Validasi panjang password (jika diubah)

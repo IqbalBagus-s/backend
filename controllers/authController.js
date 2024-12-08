@@ -1,21 +1,19 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { db } = require('../db');
+const { findUserByEmail, createUser, verifyPassword } = require('../models/userModel');
 
-
-// Fungsi untuk register pengguna
+// Fungsi register
 async function registerUser(req, res) {
   const { name, email, password } = req.body;
 
-  // Validasi panjang email
-  if (email.length < 8) {
-    return res.status(400).json({ error: true, message: 'Email must have a minimum of 8 characters' });
+  if (email.length < 8 || name.length < 8 || password.length < 8) {
+    return res.status(400).json({ error: true, message: 'Input must be at least 8 characters long' });
   }
 
   // Validasi format email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex untuk format email valid
   if (!emailRegex.test(email)) {
-    return res.status(400).json({ error: true, message: 'Invalid email' });
+    return res.status(400).json({ error: true, message: 'Invalid email format' });
   }
 
   // Validasi panjang username
@@ -28,48 +26,38 @@ async function registerUser(req, res) {
     return res.status(400).json({ error: true, message: 'Password must have a minimum of 8 characters' });
   }
 
-  // Cek apakah email sudah ada
-  const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-  if (rows.length > 0) {
+  const existingUser = await findUserByEmail(email);
+  if (existingUser) {
     return res.status(400).json({ error: true, message: 'Email is already registered.' });
   }
 
-  // Hash password sebelum menyimpannya
   const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Simpan user baru ke database
-  await db.query('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, hashedPassword]);
+  await createUser(name, email, hashedPassword);
 
   res.json({ error: false, message: 'User Created' });
 }
 
-
-
-
-// Fungsi untuk login pengguna
 async function loginUser(req, res) {
   const { email, password } = req.body;
 
-  // Cari user berdasarkan email
-  const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-  if (rows.length === 0) {
+  // Cari user berdasarkan email dengan model
+  const user = await findUserByEmail(email);
+  if (!user) {
     return res.status(400).json({ error: true, message: 'Invalid email or password' });
   }
 
-  const user = rows[0];
-
-  // Bandingkan password dengan yang ada di database
-  const isPasswordValid = await bcrypt.compare(password, user.password);
+  // Verifikasi password menggunakan model
+  const isPasswordValid = await verifyPassword(password, user.password);
   if (!isPasswordValid) {
     return res.status(400).json({ error: true, message: 'Invalid email or password' });
   }
 
   // Buat JWT token
-  const token = jwt.sign({ userId: user.id, name: user.name }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  const token = createToken(user);
 
   res.json({
     error: false,
-    message: 'success',
+    message: 'Login successful',
     loginResult: {
       userId: user.id,
       name: user.name,
@@ -78,5 +66,15 @@ async function loginUser(req, res) {
   });
 }
 
+function createToken(user) {
+  return jwt.sign(
+    {
+      userId: user.id,
+      name: user.name,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '1h' } // Token berlaku selama 1 jam
+  );
+}
 
-module.exports = { registerUser, loginUser };
+module.exports = {registerUser, loginUser};

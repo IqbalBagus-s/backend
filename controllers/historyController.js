@@ -1,20 +1,19 @@
+// controllers/historyController.js
 const { format } = require('date-fns');
-const { db } = require('../config/db');
+const historyModel = require('../models/historyModel');
 
-
-// Fungsi untuk mendapatkan histori pengguna
 async function getHistories(req, res) {
   const userId = req.user.userId; // Ambil userId dari token JWT
 
-  // Ambil data histori dari database berdasarkan userId
-  const [rows] = await db.query('SELECT complaint_disease, check_result, check_date FROM histories WHERE user_id = ?', [userId]);
+  // Ambil data histori menggunakan model
+  const histories = await historyModel.getHistoriesByUserId(userId);
 
-  if (rows.length === 0) {
+  if (histories.length === 0) {
     return res.status(404).json({ error: true, message: 'No history found' });
   }
 
   // Format tanggal sebelum mengirimkan respon
-  const formattedHistories = rows.map(history => ({
+  const formattedHistories = histories.map(history => ({
     ...history,
     check_date: format(new Date(history.check_date), 'yyyy-MM-dd HH:mm:ss'), // Format tanggal
   }));

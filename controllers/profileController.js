@@ -39,10 +39,16 @@ async function updateProfile(req, res) {
     return res.status(400).json({ error: true, message: 'Password must be at least 8 characters long' });
   }
 
-  // Update data profil pengguna menggunakan model
-  await userModel.updateUserProfile(userId, name, password);
+  try {
+    // Update data profil pengguna menggunakan model
+    await userModel.updateUserProfile(userId, name, password);
 
-  res.json({ error: false, message: 'Profile updated successfully' });
+    res.json({ error: false, message: 'Profile updated successfully' });
+  } catch (error) {
+    // Menangani error yang mungkin terjadi selama query
+    console.error(error);
+    res.status(500).json({ error: true, message: 'Failed to update profile' });
+  }
 }
 
 module.exports = { getProfile, updateProfile };

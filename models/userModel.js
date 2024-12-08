@@ -32,23 +32,28 @@ async function getUserById(userId) {
   
 
 // Fungsi untuk memperbarui data pengguna (name dan password)
-async function updateUserProfile(userId, name, password) {
-    let updateValues = [];
+async function updateUserProfile(userId, name, password, currentName, currentPassword) {
     let query = 'UPDATE users SET';
+    let updateValues = [];
+    let hasUpdates = false;
   
-    if (name) {
+    // Memperbarui kolom name jika ada perubahan
+    if (name && name !== currentName) {
       updateValues.push(name);
       query += ` name = ?`;
-    } else {
-      updateValues.push(null);  // Mengabaikan perubahan pada name jika tidak ada
+      hasUpdates = true;
     }
   
-    if (password) {
+    // Memperbarui kolom password jika ada perubahan
+    if (password && password !== currentPassword) {
       const hashedPassword = await bcrypt.hash(password, 10);
       updateValues.push(hashedPassword);
       query += `, password = ?`;
-    } else {
-      updateValues.push(null);  // Mengabaikan perubahan pada password jika tidak ada
+      hasUpdates = true;
+    }
+  
+    if (!hasUpdates) {
+      throw new Error('No changes detected');
     }
   
     query += ' WHERE id = ?';

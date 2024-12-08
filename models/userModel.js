@@ -24,42 +24,22 @@ async function verifyPassword(inputPassword, hashedPassword) {
 }
 
 
-// Fungsi untuk mendapatkan data profil pengguna berdasarkan userId
+// Fungsi untuk mendapatkan profil pengguna berdasarkan userId
 async function getUserById(userId) {
-    const [rows] = await db.query('SELECT name, email FROM users WHERE id = ?', [userId]);
-    return rows.length > 0 ? rows[0] : null;
+  const [rows] = await db.query('SELECT name, email FROM users WHERE id = ?', [userId]);
+  if (rows.length === 0) {
+    return null; // Jika tidak ada user ditemukan
+  }
+  return rows[0]; // Mengembalikan data user pertama
 }
-  
 
-// Fungsi untuk memperbarui data pengguna (name dan password)
-async function updateUserProfile(userId, name, password, currentName, currentPassword) {
-    let query = 'UPDATE users SET';
-    let updateValues = [];
-    let hasUpdates = false;
-  
-    // Memperbarui kolom name jika ada perubahan
-    if (name && name !== currentName) {
-      updateValues.push(name);
-      query += ` name = ?`;
-      hasUpdates = true;
-    }
-  
-    // Memperbarui kolom password jika ada perubahan
-    if (password && password !== currentPassword) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      updateValues.push(hashedPassword);
-      query += `, password = ?`;
-      hasUpdates = true;
-    }
-  
-    if (!hasUpdates) {
-      throw new Error('No changes detected');
-    }
-  
-    query += ' WHERE id = ?';
-    updateValues.push(userId);
-  
-    await db.query(query, updateValues);
+// Fungsi untuk memperbarui data profil pengguna (name dan password)
+async function updateUserProfile(userId, name, password) {
+  await db.query('UPDATE users SET name = ?, password = ? WHERE id = ?', [
+    name || null,
+    password || null,
+    userId
+  ]);
 }
-  
+
 module.exports = { findUserByEmail, createUser, verifyPassword, getUserById, updateUserProfile };

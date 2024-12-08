@@ -47,10 +47,16 @@ async function updateProfile(req, res) {
     hashedPassword = await bcrypt.hash(password, 10);
   }
 
-  // Update data pengguna (email tidak diubah)
-  await updateUserProfile(userId, name, hashedPassword);
+  // Pastikan bahwa jika name atau password diubah, mereka tidak kosong
+  if (!name && !password) {
+    return res.status(400).json({ error: true, message: 'Both name and password cannot be empty' });
+  }
+
+  // Update data pengguna
+  await updateUserProfile(userId, name || undefined, hashedPassword || undefined);
 
   res.json({ error: false, message: 'Profile updated successfully' });
 }
+
 
 module.exports = { getProfile, updateProfile };

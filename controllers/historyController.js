@@ -1,5 +1,6 @@
 const { format } = require('date-fns');
-const { db } = require('../db');
+const { db } = require('../config/db');
+
 
 // Fungsi untuk mendapatkan histori pengguna
 async function getHistories(req, res) {

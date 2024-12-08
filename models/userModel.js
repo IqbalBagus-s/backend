@@ -1,4 +1,5 @@
 const { db } = require('../config/db');
+const bcrypt = require('bcrypt');
 
 // Fungsi untuk mencari user berdasarkan email
 async function findUserByEmail(email) {
@@ -19,7 +20,7 @@ async function createUser(name, email, password) {
 
 // Fungsi untuk memverifikasi password pengguna
 async function verifyPassword(inputPassword, hashedPassword) {
-    return bcrypt.compare(inputPassword, hashedPassword);
+    return await bcrypt.compare(inputPassword, hashedPassword);
 }
 
 

@@ -1,13 +1,31 @@
 const { db } = require('../config/db');
 const bcrypt = require('bcrypt');
 
+// --- History Model ---
+// Fungsi untuk mendapatkan histori berdasarkan userId
+async function getHistoriesByName(name) {
+  const [rows] = await db.query(
+    'SELECT age, hypertension, heart_disease, body_mass_index, HbA1c_level, blood_glucose_level, gender, smoking_history, diabetes_category, check_date FROM histories WHERE name = ?',
+    [name]
+  );
+
+  if (rows.length > 0) {
+    return rows[0]; // Mengembalikan histori pertama yang ditemukan
+  }
+
+  return null; // Mengembalikan null jika tidak ditemukan
+}
+
+module.exports = { getHistoriesByName };
+
+// --- User Model ---
 // Fungsi untuk mencari user berdasarkan email
 async function findUserByEmail(email) {
-    const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (rows.length > 0) {
-      return rows[0]; // Mengembalikan data pengguna pertama yang ditemukan
-    }
-    return null; // Mengembalikan null jika tidak ditemukan
+  const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+  if (rows.length > 0) {
+    return rows[0]; // Mengembalikan data pengguna pertama yang ditemukan
+  }
+  return null; // Mengembalikan null jika tidak ditemukan
 }
 
 // Fungsi untuk mencari user berdasarkan name
@@ -29,9 +47,8 @@ async function createUser(name, email, password) {
 
 // Fungsi untuk memverifikasi password pengguna
 async function verifyPassword(inputPassword, hashedPassword) {
-    return await bcrypt.compare(inputPassword, hashedPassword);
+  return await bcrypt.compare(inputPassword, hashedPassword);
 }
-
 
 // Fungsi untuk mendapatkan profil pengguna berdasarkan userId
 async function getUserById(userId) {
@@ -41,7 +58,6 @@ async function getUserById(userId) {
   }
   return rows[0]; // Mengembalikan data user pertama
 }
-
 
 // Fungsi untuk memperbarui data profil pengguna (name dan password)
 async function updateUserProfile(userId, name, password) {
@@ -57,5 +73,14 @@ async function updateUserProfile(userId, name, password) {
   return result;
 }
 
-
-module.exports = { findUserByEmail, findUserByName, createUser, verifyPassword, getUserById, updateUserProfile };
+module.exports = {
+  // History Model
+  getHistoriesByName,
+  // User Model
+  findUserByEmail,
+  findUserByName,
+  createUser,
+  verifyPassword,
+  getUserById,
+  updateUserProfile
+};

@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { format } = require('date-fns');
-const { findUserByEmail, createUser, verifyPassword, getUserById, updateUserProfile, getHistoriesByName } = require('../models/userHistoryModel');
+const { findUserByEmail, findUserByName, createUser, verifyPassword, getUserById, updateUserProfile, getHistoriesByName } = require('../models/userHistoryModel');
 
 // Fungsi register
 async function registerUser(req, res) {
@@ -20,9 +20,14 @@ async function registerUser(req, res) {
     return res.status(400).json({ status: 'error', message: 'Password must have a minimum of 8 characters' });
   }
 
-  const existingUser = await findUserByEmail(email);
-  if (existingUser) {
-    return res.status(400).json({ status: 'error', message: 'Username or email is already registered.' });
+  const existingUserByEmail = await findUserByEmail(email);
+  if (existingUserByEmail) {
+    return res.status(400).json({ status: 'error', message: 'Email is already registered.' });
+  }
+
+  const existingUserByName = await findUserByName(name);
+  if (existingUserByName) {
+    return res.status(400).json({ status: 'error', message: 'Username is already taken.' });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);

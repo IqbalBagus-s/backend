@@ -78,22 +78,23 @@ function createToken(user) {
 async function getHistories(req, res) {
   const userName = req.user.name;
 
-  const history = await getHistoriesByName(userName);
+  const histories = await getHistoriesByName(userName);
 
-  if (!history) {
+  if (histories.length === 0) {
     return res.status(404).json({ status: 'error', message: 'No history found' });
   }
 
-  const formattedHistory = {
+  const formattedHistories = histories.map((history) => ({
     ...history,
     check_date: format(new Date(history.check_date), 'yyyy-MM-dd HH:mm:ss'),
-  };
+  }));
 
   res.json({
     status: 'success',
-    history: formattedHistory,
+    histories: formattedHistories,
   });
 }
+
 
 // Fungsi untuk mendapatkan profil pengguna
 async function getProfile(req, res) {

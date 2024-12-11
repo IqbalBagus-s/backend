@@ -9,14 +9,9 @@ async function getHistoriesByName(name) {
     [name]
   );
 
-  if (rows.length > 0) {
-    return rows[0]; // Mengembalikan histori pertama yang ditemukan
-  }
-
-  return null; // Mengembalikan null jika tidak ditemukan
+  return rows; // Mengembalikan seluruh array histori
 }
 
-module.exports = { getHistoriesByName };
 
 // --- User Model ---
 // Fungsi untuk mencari user berdasarkan email

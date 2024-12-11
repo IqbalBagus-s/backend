@@ -69,7 +69,6 @@ async function updateUserProfile(userId, name, password) {
     WHERE id = ?
   `;
   const [result] = await db.query(query, [name, password, userId]);
-  console.log('Update Query Result:', result); // Debugging hasil query
   return result;
 }
 
